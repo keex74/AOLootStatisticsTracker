@@ -1,12 +1,23 @@
-﻿using AOSharp.Core.UI;
-using Microsoft.Data.Sqlite;
+﻿// <copyright file="SqliteWriter.cs" company="PlaceholderCompany">
+// Written by Keex in 2025.
+// </copyright>
 
 namespace LootStatisticsTracker;
 
+using AOSharp.Core.UI;
+using Microsoft.Data.Sqlite;
+
+/// <summary>
+/// Defines a class that writes loot data into a database.
+/// </summary>
 internal class SqliteWriter
 {
     private SqliteConnection? currentConnection;
 
+    /// <summary>
+    /// Set the database path and open or close the database.
+    /// </summary>
+    /// <param name="path">The database path.</param>
     public void SetPath(string path)
     {
         try
@@ -35,9 +46,14 @@ internal class SqliteWriter
             Chat.WriteLine($"Error opening the database: {ex}", AOSharp.Common.GameData.ChatColor.Red);
             Chat.WriteLine($"Filename: {path}", AOSharp.Common.GameData.ChatColor.Orange);
         }
-
     }
 
+    /// <summary>
+    /// Insert container / chest information into the database.
+    /// </summary>
+    /// <param name="info">The chest information.</param>
+    /// <returns>The result of the insert.</returns>
+    /// <exception cref="InvalidOperationException">If inserting into the database resulted in an error.</exception>
     public InsertResult InsertContainer(LootInfo info)
     {
         var db = this.currentConnection;
@@ -70,8 +86,8 @@ VALUES(@instance, @timeLooted, @name, @pfInstance, @pfName, @pfIsDungeon, @locX,
             using var cmd2 = db.CreateCommand();
             cmd2.CommandText = @"SELECT last_insert_rowid();";
             var lastrow = (long)cmd2.ExecuteScalar()!;
-            InsertContainerItems(db, info, lastrow);
-            InsertStats(db, info, lastrow, "ContainerStats", "fk_container");
+            this.InsertContainerItems(db, info, lastrow);
+            this.InsertStats(db, info, lastrow, "ContainerStats", "fk_container");
             ta.Commit();
             return InsertResult.OK;
         }
@@ -82,7 +98,13 @@ VALUES(@instance, @timeLooted, @name, @pfInstance, @pfName, @pfIsDungeon, @locX,
         }
     }
 
-    public InsertResult InsertCorpse(LootInfo info, bool legacy)
+    /// <summary>
+    /// Insert corpse information into the database.
+    /// </summary>
+    /// <param name="info">The corpse information.</param>
+    /// <returns>The result of the insert.</returns>
+    /// <exception cref="InvalidOperationException">If inserting into the database resulted in an error.</exception>
+    public InsertResult InsertCorpse(LootInfo info)
     {
         var db = this.currentConnection;
         if (db == null)
@@ -116,14 +138,14 @@ VALUES(@instance, @timeLooted, @corpseName, @pfInstance, @pfName, @pfIsDungeon, 
             cmd.Parameters.AddWithValue("sourceProfession", info.Profession);
             cmd.Parameters.AddWithValue("sourceBreed", info.Breed);
             cmd.Parameters.AddWithValue("sourceGender", info.Gender);
-            cmd.Parameters.AddWithValue("areCorpseStats", legacy ? 1 : 0);
+            cmd.Parameters.AddWithValue("areCorpseStats", info.HadMobStats ? 0 : 1);
             cmd.ExecuteNonQuery();
             using var cmd2 = db.CreateCommand();
             cmd2.CommandText = @"SELECT last_insert_rowid();";
             var lastrow = (long)cmd2.ExecuteScalar()!;
-            InsertCorpseItems(db, info, lastrow);
-            InsertBuffs(db, info, lastrow);
-            InsertStats(db, info, lastrow, "Stats", "fk_corpse");
+            this.InsertCorpseItems(db, info, lastrow);
+            this.InsertBuffs(db, info, lastrow);
+            this.InsertStats(db, info, lastrow, "Stats", "fk_corpse");
             ta.Commit();
             return InsertResult.OK;
         }
