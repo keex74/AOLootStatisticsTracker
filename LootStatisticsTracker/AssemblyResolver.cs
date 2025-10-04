@@ -1,12 +1,28 @@
-﻿using AOSharp.Core.UI;
-using System.Reflection;
+﻿// <copyright file="AssemblyResolver.cs" company="PlaceholderCompany">
+// Written by Keex in 2025.
+// </copyright>
 
 namespace LootStatisticsTracker;
 
+using System.Reflection;
+using AOSharp.Core.UI;
+
+/// <summary>
+/// Defines a class that implements lazy loading of assembly references.
+/// </summary>
 internal class AssemblyResolver
 {
+    /// <summary>
+    /// Gets or sets the plugin directory.
+    /// </summary>
     public string PluginDirectory { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Resolve the given assembly.
+    /// </summary>
+    /// <param name="sender">The event sender.</param>
+    /// <param name="args">The event arguments.</param>
+    /// <returns>The loaded assembly, if any.</returns>
     public System.Reflection.Assembly? ResolveAssembly(object sender, ResolveEventArgs args)
     {
         var pluginDir = !string.IsNullOrEmpty(this.PluginDirectory) ? this.PluginDirectory : Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);

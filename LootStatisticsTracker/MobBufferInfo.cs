@@ -1,10 +1,22 @@
-﻿using AOSharp.Common.GameData;
-using AOSharp.Core;
+﻿// <copyright file="MobBufferInfo.cs" company="PlaceholderCompany">
+// Written by Keex in 2025.
+// </copyright>
 
 namespace LootStatisticsTracker;
 
+using AOSharp.Common.GameData;
+using AOSharp.Core;
+
+/// <summary>
+/// Defines buffered information about a mob.
+/// </summary>
 internal class MobBufferInfo
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MobBufferInfo"/> class.
+    /// </summary>
+    /// <param name="dynel">The source dynel.</param>
+    /// <param name="recordStats">Whether to record all stats values.</param>
     public MobBufferInfo(Dynel dynel, bool recordStats)
     {
         if (dynel.Identity.Type == IdentityType.SimpleChar)
@@ -46,19 +58,43 @@ internal class MobBufferInfo
         }
     }
 
+    /// <summary>
+    /// Gets or sets the level.
+    /// </summary>
     public int Level { get; set; }
 
+    /// <summary>
+    /// Gets or sets the profession.
+    /// </summary>
     public Profession Profession { get; set; }
 
+    /// <summary>
+    /// Gets or sets the breed.
+    /// </summary>
     public Breed Breed { get; set; }
 
+    /// <summary>
+    /// Gets or sets the gender.
+    /// </summary>
     public Gender Gender { get; set; }
 
+    /// <summary>
+    /// Gets or sets the name.
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Gets or sets the maximum health.
+    /// </summary>
     public int MaxHealth { get; set; }
 
+    /// <summary>
+    /// Gets or sets the level.
+    /// </summary>
     public List<BuffInfo> Buffs { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the level.
+    /// </summary>
     public List<MobStat> Stats { get; set; } = [];
 }

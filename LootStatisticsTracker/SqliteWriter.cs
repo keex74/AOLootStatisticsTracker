@@ -62,7 +62,7 @@ internal class SqliteWriter
             return InsertResult.DbNotOpen;
         }
 
-        if (this.ContainerAlreadyOpened(db, info))
+        if (ContainerAlreadyOpened(db, info))
         {
             return InsertResult.AlreadyInserted;
         }
@@ -86,8 +86,8 @@ VALUES(@instance, @timeLooted, @name, @pfInstance, @pfName, @pfIsDungeon, @locX,
             using var cmd2 = db.CreateCommand();
             cmd2.CommandText = @"SELECT last_insert_rowid();";
             var lastrow = (long)cmd2.ExecuteScalar()!;
-            this.InsertContainerItems(db, info, lastrow);
-            this.InsertStats(db, info, lastrow, "ContainerStats", "fk_container");
+            InsertContainerItems(db, info, lastrow);
+            InsertStats(db, info, lastrow, "ContainerStats", "fk_container");
             ta.Commit();
             return InsertResult.OK;
         }
@@ -112,7 +112,7 @@ VALUES(@instance, @timeLooted, @name, @pfInstance, @pfName, @pfIsDungeon, @locX,
             return InsertResult.DbNotOpen;
         }
 
-        if (this.CorpseAlreadyOpened(db, info))
+        if (CorpseAlreadyOpened(db, info))
         {
             return InsertResult.AlreadyInserted;
         }
@@ -143,9 +143,9 @@ VALUES(@instance, @timeLooted, @corpseName, @pfInstance, @pfName, @pfIsDungeon, 
             using var cmd2 = db.CreateCommand();
             cmd2.CommandText = @"SELECT last_insert_rowid();";
             var lastrow = (long)cmd2.ExecuteScalar()!;
-            this.InsertCorpseItems(db, info, lastrow);
-            this.InsertBuffs(db, info, lastrow);
-            this.InsertStats(db, info, lastrow, "Stats", "fk_corpse");
+            InsertCorpseItems(db, info, lastrow);
+            InsertBuffs(db, info, lastrow);
+            InsertStats(db, info, lastrow, "Stats", "fk_corpse");
             ta.Commit();
             return InsertResult.OK;
         }
@@ -156,7 +156,7 @@ VALUES(@instance, @timeLooted, @corpseName, @pfInstance, @pfName, @pfIsDungeon, 
         }
     }
 
-    private void InsertCorpseItems(SqliteConnection db, LootInfo info, long corpseRowId)
+    private static void InsertCorpseItems(SqliteConnection db, LootInfo info, long corpseRowId)
     {
         using var cmd = db.CreateCommand();
         cmd.CommandText = @"INSERT INTO LootItems (fk_corpse,lowId,highId,name,ql,charges) 
@@ -178,7 +178,7 @@ VALUES(@fk_corpse,@lowId,@highId,@name,@ql,@charges);";
         }
     }
 
-    private void InsertContainerItems(SqliteConnection db, LootInfo info, long containerRowId)
+    private static void InsertContainerItems(SqliteConnection db, LootInfo info, long containerRowId)
     {
         using var cmd = db.CreateCommand();
         cmd.CommandText = @"INSERT INTO ContainerItems (fk_container,lowId,highId,name,ql,charges) 
@@ -200,7 +200,7 @@ VALUES(@fk_container,@lowId,@highId,@name,@ql,@charges);";
         }
     }
 
-    private void InsertBuffs(SqliteConnection db, LootInfo info, long corpseid)
+    private static void InsertBuffs(SqliteConnection db, LootInfo info, long corpseid)
     {
         using var cmd = db.CreateCommand();
         cmd.CommandText = @"INSERT INTO Buffs (fk_corpse,buffId,name,timeLeft) 
@@ -218,7 +218,7 @@ VALUES(@fk_corpse,@buffId,@name,@timeLeft);";
         }
     }
 
-    private void InsertStats(SqliteConnection db, LootInfo info, long parentRowId, string tableName, string fkName)
+    private static void InsertStats(SqliteConnection db, LootInfo info, long parentRowId, string tableName, string fkName)
     {
         using var cmd = db.CreateCommand();
         cmd.CommandText = $@"INSERT INTO {tableName} ({fkName},statId,name,value) 
@@ -236,7 +236,7 @@ VALUES(@fk_parent,@statId,@name,@value);";
         }
     }
 
-    private bool CorpseAlreadyOpened(SqliteConnection db, LootInfo info)
+    private static bool CorpseAlreadyOpened(SqliteConnection db, LootInfo info)
     {
         using var cmdCheck = db.CreateCommand();
         cmdCheck.CommandText = $@"SELECT timeLooted FROM Corpses WHERE instance = @instance AND pfInstance = @pf AND corpseName = @name;";
@@ -262,7 +262,7 @@ VALUES(@fk_parent,@statId,@name,@value);";
         return false;
     }
 
-    private bool ContainerAlreadyOpened(SqliteConnection db, LootInfo info)
+    private static bool ContainerAlreadyOpened(SqliteConnection db, LootInfo info)
     {
         using var cmdCheck = db.CreateCommand();
         cmdCheck.CommandText = $@"SELECT timeLooted FROM Containers WHERE instance = @instance AND pfInstance = @pf AND name = @name;";

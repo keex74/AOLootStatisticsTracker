@@ -1,25 +1,36 @@
-﻿using AOSharp.Common.GameData;
+﻿// <copyright file="MainPlugin.cs" company="PlaceholderCompany">
+// Written by Keex in 2025.
+// </copyright>
+
+namespace LootStatisticsTracker;
+
+using AOSharp.Common.GameData;
 using AOSharp.Core;
 using AOSharp.Core.Inventory;
 using AOSharp.Core.UI;
 using SmokeLounge.AOtomation.Messaging.Messages;
 using SmokeLounge.AOtomation.Messaging.Messages.N3Messages;
 
-namespace LootStatisticsTracker;
-
+/// <summary>
+/// Defines the main plugin.
+/// </summary>
 public class MainPlugin
     : AOPluginEntry
 {
-    private readonly Dictionary<long, MobBufferInfo> MobInfoBuffer = [];
+    private readonly Dictionary<long, MobBufferInfo> mobInfoBuffer = [];
     private readonly SqliteWriter sqliteWriter = new();
     private readonly AssemblyResolver assemblyResolver = new();
     private string configPath = string.Empty;
     private Config settings = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainPlugin"/> class.
+    /// </summary>
     public MainPlugin()
     {
     }
 
+    /// <inheritdoc/>
     public override void Run()
     {
         this.assemblyResolver.PluginDirectory = this.PluginDirectory;
@@ -27,7 +38,7 @@ public class MainPlugin
         AppDomain.CurrentDomain.AssemblyResolve += this.assemblyResolver.ResolveAssembly;
 
         this.configPath = Path.Combine(this.PluginDirectory, "config.json");
-        if (File.Exists(configPath))
+        if (File.Exists(this.configPath))
         {
             this.settings = Config.Load(this.configPath);
         }
@@ -46,13 +57,14 @@ public class MainPlugin
             Chat.WriteLine("Do /lst setoutput \"<path+filename>\"", ChatColor.Green);
         }
 
-        Chat.RegisterCommand("lst", HandleLstCallback);
+        Chat.RegisterCommand("lst", this.HandleLstCallback);
         this.RefreshPath();
         this.InitializeMobBuffer();
         Chat.WriteLine("LootStatisticsTracker loaded.");
         Chat.WriteLine("Set output database: /lst setoutput \"<path+filename>\"");
     }
 
+    /// <inheritdoc/>
     public override void Teardown()
     {
         base.Teardown();
@@ -113,13 +125,13 @@ public class MainPlugin
 
     private void InitializeMobBuffer()
     {
-        this.MobInfoBuffer.Clear();
+        this.mobInfoBuffer.Clear();
         foreach (var dynel in DynelManager.AllDynels)
         {
             if (dynel.Identity.Type == AOSharp.Common.GameData.IdentityType.SimpleChar)
             {
                 var sc = new SimpleChar(dynel);
-                this.MobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, false);
+                this.mobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, false);
             }
         }
     }
@@ -136,7 +148,7 @@ public class MainPlugin
                 if (DynelManager.Find(attackMsg.Target, out Dynel dynel))
                 {
                     var sc = new SimpleChar(dynel);
-                    this.MobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, true);
+                    this.mobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, true);
                 }
             }
         }
@@ -147,7 +159,7 @@ public class MainPlugin
                 if (DynelManager.Find(infomsg.Identity, out Dynel dynel))
                 {
                     var sc = new SimpleChar(dynel);
-                    this.MobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, true);
+                    this.mobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, true);
                 }
             }
         }
@@ -159,7 +171,7 @@ public class MainPlugin
         if (dynel.Identity.Type == AOSharp.Common.GameData.IdentityType.SimpleChar)
         {
             var sc = new SimpleChar(dynel);
-            this.MobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, false);
+            this.mobInfoBuffer[dynel.Identity.Instance] = new MobBufferInfo(sc, false);
         }
     }
 
@@ -197,10 +209,10 @@ public class MainPlugin
             }
 
             Chat.WriteLine($"Corpse opened: {container.Identity.Instance} - {sourceCorpse.Name}");
-            var contents = GetLootInfo(sourceCorpse);
+            var contents = this.GetLootInfo(sourceCorpse);
             try
             {
-                var insertResult = this.sqliteWriter.InsertCorpse(contents, false);
+                var insertResult = this.sqliteWriter.InsertCorpse(contents);
                 if (insertResult == InsertResult.OK)
                 {
                     Chat.WriteLine("Corpse information saved successfully.", ChatColor.Green);
@@ -235,7 +247,7 @@ public class MainPlugin
             }
 
             Chat.WriteLine($"Chest opened: {container.Identity.Instance} - {sourceChest.Name}");
-            var contents = GetLootInfo(sourceChest);
+            var contents = this.GetLootInfo(sourceChest);
             try
             {
                 var inserted = this.sqliteWriter.InsertContainer(contents);
@@ -269,7 +281,7 @@ public class MainPlugin
     private LootInfo GetLootInfo(Corpse corpse)
     {
         var ident = corpse.GetStat(AOSharp.Common.GameData.Stat.CorpseInstance);
-        if (this.MobInfoBuffer.TryGetValue(ident, out var mobInfo))
+        if (this.mobInfoBuffer.TryGetValue(ident, out var mobInfo))
         {
             return new LootInfo(corpse, mobInfo);
         }
