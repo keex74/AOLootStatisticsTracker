@@ -226,7 +226,7 @@ VALUES(@fk_parent,@statId,@name,@value);";
         {
             // Check corpse age
             var timeNow = info.RecordedOnUnix;
-            var otherTime = rdr.GetInt64(1);
+            var otherTime = rdr.GetInt64(0);
             var msElapsed = timeNow - otherTime;
             if (msElapsed > 30 * 60 * 1000)
             {
