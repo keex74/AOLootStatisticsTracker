@@ -35,7 +35,6 @@ internal class LootInfo
         this.Profession = mobInfo != null ? (int)mobInfo.Profession : 0;
         this.Breed = mobInfo != null ? (int)mobInfo.Breed : 0;
         this.Gender = mobInfo != null ? (int)mobInfo.Gender : 0;
-        Chat.WriteLine($"Mob health: {(mobInfo != null ? mobInfo.MaxHealth : -1)}");
         this.Playfield = new LocationInfo(true);
         this.Position = new PositionInfo(corpse.Position);
         this.GlobalPosition = new PositionInfo(corpse.GlobalPosition);
