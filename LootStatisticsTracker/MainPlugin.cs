@@ -200,15 +200,30 @@ public class MainPlugin
             var contents = GetLootInfo(sourceCorpse);
             try
             {
-                var inserted = this.sqliteWriter.InsertCorpse(contents, false);
-                if (!inserted)
+                var insertResult = this.sqliteWriter.InsertCorpse(contents, false);
+                if (insertResult == InsertResult.OK)
                 {
-                    Chat.WriteLine($"Failed to insert corpse into database for some reason :(", ChatColor.Red);
+                    Chat.WriteLine("Corpse information saved successfully.", ChatColor.Green);
+                }
+                else if (insertResult == InsertResult.AlreadyInserted)
+                {
+                    Chat.WriteLine("Corpse information was already saved.", ChatColor.Gold);
+                }
+                else
+                {
+                    Chat.WriteLine("The database connection was not open! Set the output path.", ChatColor.Red);
                 }
             }
             catch (Exception ex)
             {
-                Chat.WriteLine($"DB Error: {ex}", ChatColor.Red);
+                if (ex.InnerException != null)
+                {
+                    Chat.WriteLine($"DB Insert error: {ex.InnerException}", ChatColor.Red);
+                }
+                else
+                {
+                    Chat.WriteLine($"DB Insert error: {ex}", ChatColor.Red);
+                }
             }
         }
         else if (container.Identity.Type == IdentityType.Container)
@@ -224,14 +239,29 @@ public class MainPlugin
             try
             {
                 var inserted = this.sqliteWriter.InsertContainer(contents);
-                if (!inserted)
+                if (inserted == InsertResult.OK)
                 {
-                    Chat.WriteLine($"Failed to insert container into database for some reason :(", ChatColor.Red);
+                    Chat.WriteLine("Chest information saved successfully.", ChatColor.Green);
+                }
+                else if (inserted == InsertResult.AlreadyInserted)
+                {
+                    Chat.WriteLine("Chest information was already saved.", ChatColor.Gold);
+                }
+                else
+                {
+                    Chat.WriteLine("The database connection was not open! Set the output path.", ChatColor.Red);
                 }
             }
             catch (Exception ex)
             {
-                Chat.WriteLine($"DB Error: {ex}", ChatColor.Red);
+                if (ex.InnerException != null)
+                {
+                    Chat.WriteLine($"DB Insert error: {ex.InnerException}", ChatColor.Red);
+                }
+                else
+                {
+                    Chat.WriteLine($"DB Insert error: {ex}", ChatColor.Red);
+                }
             }
         }
     }

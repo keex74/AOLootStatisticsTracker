@@ -38,17 +38,17 @@ internal class SqliteWriter
 
     }
 
-    public bool InsertContainer(LootInfo info)
+    public InsertResult InsertContainer(LootInfo info)
     {
         var db = this.currentConnection;
         if (db == null)
         {
-            return false;
+            return InsertResult.DbNotOpen;
         }
 
         if (this.ContainerAlreadyOpened(db, info))
         {
-            return false;
+            return InsertResult.AlreadyInserted;
         }
 
         using var ta = db.BeginTransaction();
@@ -73,26 +73,26 @@ VALUES(@instance, @timeLooted, @name, @pfInstance, @pfName, @pfIsDungeon, @locX,
             InsertContainerItems(db, info, lastrow);
             InsertStats(db, info, lastrow, "ContainerStats", "fk_container");
             ta.Commit();
-            return true;
+            return InsertResult.OK;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             ta.Rollback();
-            return false;
+            throw new InvalidOperationException("Failed to insert", ex);
         }
     }
 
-    public bool InsertCorpse(LootInfo info, bool legacy)
+    public InsertResult InsertCorpse(LootInfo info, bool legacy)
     {
         var db = this.currentConnection;
         if (db == null)
         {
-            return false;
+            return InsertResult.DbNotOpen;
         }
 
         if (this.CorpseAlreadyOpened(db, info))
         {
-            return false;
+            return InsertResult.AlreadyInserted;
         }
 
         using var ta = db.BeginTransaction();
@@ -125,12 +125,12 @@ VALUES(@instance, @timeLooted, @corpseName, @pfInstance, @pfName, @pfIsDungeon, 
             InsertBuffs(db, info, lastrow);
             InsertStats(db, info, lastrow, "Stats", "fk_corpse");
             ta.Commit();
-            return true;
+            return InsertResult.OK;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             ta.Rollback();
-            return false;
+            throw new InvalidOperationException("Failed to insert", ex);
         }
     }
 
